@@ -9,7 +9,7 @@ type Provider interface {
 	GetEmailAddress(*SessionState) (string, error)
 	GetUserName(*SessionState) (string, error)
 	Redeem(string, string) (*SessionState, error)
-	ValidateGroup(string) bool
+	ValidateSession(*SessionState) bool
 	ValidateSessionState(*SessionState) bool
 	GetLoginURL(redirectURI, finalRedirect string) string
 	RefreshSessionIfNeeded(*SessionState) (bool, error)
@@ -29,6 +29,8 @@ func New(provider string, p *ProviderData) Provider {
 		return NewAzureProvider(p)
 	case "gitlab":
 		return NewGitLabProvider(p)
+	case "wob":
+		return NewWobProvider(p)
 	case "oidc":
 		return NewOIDCProvider(p)
 	default:

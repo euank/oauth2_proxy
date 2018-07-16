@@ -111,9 +111,11 @@ func (p *ProviderData) GetUserName(s *SessionState) (string, error) {
 	return "", errors.New("not implemented")
 }
 
-// ValidateGroup validates that the provided email exists in the configured provider
-// email group(s).
-func (p *ProviderData) ValidateGroup(email string) bool {
+// ValidateSession validates that the provided session state, including a set
+// email if applicable, should be considered authorized. By default, anyone is
+// allowed, but some providers may provide mechanisms for checking membership
+// in groups, organizations, etc.
+func (p *ProviderData) ValidateSession(s *SessionState) bool {
 	return true
 }
 

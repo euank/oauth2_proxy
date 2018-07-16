@@ -33,6 +33,8 @@ type Options struct {
 	AzureTenant              string   `flag:"azure-tenant" cfg:"azure_tenant"`
 	EmailDomains             []string `flag:"email-domain" cfg:"email_domains"`
 	GitHubOrg                string   `flag:"github-org" cfg:"github_org"`
+	WobGroups                []string `flag:"wob-groups" cfg:"wob_groups"`
+	WobURL                   string   `flag:"wob-url" cfg:"wob_url"`
 	GitHubTeam               string   `flag:"github-team" cfg:"github_team"`
 	GoogleGroups             []string `flag:"google-group" cfg:"google_group"`
 	GoogleAdminEmail         string   `flag:"google-admin-email" cfg:"google_admin_email"`
@@ -117,6 +119,11 @@ func NewOptions() *Options {
 }
 
 func parseURL(to_parse string, urltype string, msgs []string) (*url.URL, []string) {
+	// url.Parse will happily parse an empty string without providing an error,
+	// but it's convenient to keep the url nil by default for future checks.
+	if to_parse == "" {
+		return nil, msgs
+	}
 	parsed, err := url.Parse(to_parse)
 	if err != nil {
 		return nil, append(msgs, fmt.Sprintf(
@@ -271,6 +278,16 @@ func parseProviderInfo(o *Options, msgs []string) []string {
 			} else {
 				p.SetGroupRestriction(o.GoogleGroups, o.GoogleAdminEmail, file)
 			}
+		}
+	case *providers.WobProvider:
+		p.SetRequiredGroups(o.WobGroups)
+		var wobURL *url.URL
+		wobURL, msgs = parseURL(o.WobURL, "wob-url", msgs)
+		p.SetWobURL(wobURL)
+		if o.oidcVerifier == nil {
+			msgs = append(msgs, "oidc provider requires an oidc issuer URL")
+		} else {
+			p.Verifier = o.oidcVerifier
 		}
 	case *providers.OIDCProvider:
 		if o.oidcVerifier == nil {
